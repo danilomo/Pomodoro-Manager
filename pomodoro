@@ -1,0 +1,33 @@
+#!/bin/bash
+
+
+case "$1" in
+    start|s) 
+        ./cancel-alarm
+        echo "Starting pomodoro."
+        ./alarm 25m
+        ;;
+    cancel|c)
+        echo "Current pomodoro/break canceled."
+        ./cancel-alarm
+        ;;
+    break|b)
+        ./cancel-alarm
+        echo "Starting short break."
+        ./alarm 5m
+        ;;
+    long-break|lb)
+        ./cancel-alarm
+        echo "Starting long break."
+        ./alarm 15m
+        ;;
+    time-left|tl)
+        ./remaining
+        ;;
+    *)
+        #echo usage blablabla
+        ;;
+esac
+
+
+
