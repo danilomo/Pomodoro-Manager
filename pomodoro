@@ -5,7 +5,7 @@ case "$1" in
     start|s) 
         ./cancel-alarm
         echo "Starting pomodoro."
-        ./alarm 25m
+        ./alarm 25m "./record-pomodoro"
         ;;
     cancel|c)
         echo "Current pomodoro/break canceled."
@@ -23,6 +23,9 @@ case "$1" in
         ;;
     time-left|tl)
         ./remaining
+        ;;
+    today|t)
+        ./pomodoros-today
         ;;
     *)
         #echo usage blablabla

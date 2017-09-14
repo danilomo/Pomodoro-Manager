@@ -1,9 +1,16 @@
 #!/bin/bash
 
+if [ -z "$2" ]
+then
+    comm=":"
+else
+    comm=$2
+fi
+
 d=$(echo $1 | sed 's/s/sec/g' | sed 's/m/min/g')
 d=$(date -d "+$d" +%s)
 echo $d > stopat.txt
 
-sleep $1 && ./cleanup && mplayer ./sounds/alarm.ogg > /dev/null 2>&1 &
+sleep $1 && ./cleanup && eval $comm && mplayer ./sounds/alarm.ogg > /dev/null 2>&1 &
 p=$!
 echo $p > pid.txt
