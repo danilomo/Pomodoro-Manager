@@ -1,14 +1,45 @@
 #!/bin/bash
 
+function check-command {
+  type $1 > /dev/null 2>/dev/null
+
+  if [ $? -ne 0 ]
+  then
+    (>&2 echo "Command $1 expected, but not found.")
+    (>&2 echo "Please install dependencies: sudo apt-get install sqlite3 jq")
+    exit 1
+  fi
+}
+
+function check-working-directory {
+  if [ ! -d ~/.pomodoro_manager ]
+  then
+    mkdir ~/.pomodoro_manager
+    echo '{
+      "pomodoro_duration": "25m",
+      "break_duration": "5m",
+      "long_break-duration": "15m"
+    }' > ~/.pomodoro_manager/config.json
+
+    mkdir ~/.pomodoro_manager/sounds
+    wget -o ~/.pomodoro_manager/sounds/alarm.ogg http://www.bigsoundbank.com/dl.php?ext=wav&id=0897&button=GO%3E
+    sqlite3 ~/.pomodoro_manager/database.db "CREATE TABLE pomodoros( pomDate TEXT, pomTime TEXT )"
+  fi
+}
+
+function load-variables {
+  :
+}
+
 function record-pomodoro {
   dt=$(date +%Y-%m-%d)
   t=$(date +%H:%M)
 
-  sqlite3 database.db "INSERT INTO pomodoros VALUES( '$dt', '$t' )"
+  sqlite3 ~/.pomodoro_manager/database.db "INSERT INTO pomodoros VALUES( '$dt', '$t' )"
 }
 
 function cleanup {
-  rm -f *.txt
+  rm -f ~/.pomodoro_manager/*.txt
 }
 
 function alarm {
@@ -21,18 +52,18 @@ function alarm {
 
   d=$(echo $1 | sed 's/s/sec/g' | sed 's/m/min/g')
   d=$(date -d "+$d" +%s)
-  echo $d > stopat.txt
+  echo $d > ~/.pomodoro_manager/stopat.txt
 
-  sleep $1 && cleanup && eval "$comm" && mplayer ./sounds/alarm.ogg > /dev/null 2>&1 &
+  sleep $1 && cleanup && eval "$comm" && mplayer ~/.pomodoro_manager/sounds/alarm.ogg > /dev/null 2>&1 &
   p=$!
-  echo $p > pid.txt
+  echo $p > ~/.pomodoro_manager/pid.txt
 }
 
 function cancel-alarm {
-  if [ -f pid.txt ]
+  if [ -f ~/.pomodoro_manager/pid.txt ]
   then
-      psleep=$(pgrep -P $(cat pid.txt))
-      kill $(cat pid.txt) 2>/dev/null
+      psleep=$(pgrep -P $(cat ~/.pomodoro_manager/pid.txt))
+      kill $(cat ~/.pomodoro_manager/pid.txt) 2>/dev/null
       kill $psleep 2>/dev/null
       cleanup
   fi
@@ -41,7 +72,7 @@ function cancel-alarm {
 function pomodoros-today {
   dt=$(date '+%Y-%m-%d')
 
-  sqlite3 database.db "SELECT pomTime FROM pomodoros WHERE pomDate = '$dt'" | awk -F ":" '
+  sqlite3 ~/.pomodoro_manager/database.db "SELECT pomTime FROM pomodoros WHERE pomDate = '$dt'" | awk -F ":" '
     BEGIN{
       morning=0;
       afternoon=0;
@@ -67,10 +98,10 @@ function pomodoros-today {
 }
 
 function remaining {
-  if [ -f stopat.txt ]
+  if [ -f ~/.pomodoro_manager/stopat.txt ]
   then
       d1=$(date +%s)
-      d2=$(cat stopat.txt)
+      d2=$(cat ~/.pomodoro_manager/stopat.txt)
 
       remaining=$(($d2 - $d1))
 
@@ -91,6 +122,11 @@ function remaining {
 
   fi
 }
+
+check-command sqlite3
+check-command jq
+check-working-directory
+load-variables
 
 case "$1" in
     start|s)
