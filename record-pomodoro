@@ -1,7 +1,0 @@
-#!/bin/bash
-
-dt=$(date +%Y-%m-%d)
-t=$(date +%H:%M)
-
-sqlite3 database.db "INSERT INTO pomodoros VALUES( '$dt', '$t' )"
-

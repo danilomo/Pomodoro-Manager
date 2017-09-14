@@ -1,9 +1,0 @@
-#!/bin/bash
-
-if [ -f pid.txt ]
-then
-    psleep=$(pgrep -P $(cat pid.txt))
-    kill $(cat pid.txt) 2>/dev/null
-    kill $psleep 2>/dev/null
-    ./cleanup
-fi

@@ -1,7 +1,0 @@
-#!/bin/bash
-
-dt=$(date '+%Y-%m-%d')
-
-sqlite3 database.db "SELECT pomTime FROM pomodoros WHERE pomDate = '$dt'" | awk -F ":" -f parse.awk
-
-
